@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Integer test</title>
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/validators.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+  <form method="POST">
+    <label for="age">
+      Age :&nbsp;
+    </label>
+    <!-- Control to validate -->
+    <input type="text" id="age" name="age" size="15" placeholder="Enter your age">
+    <br>
+    <label for="higher">
+        Higher number :&nbsp;
+    </label>
+    <!-- Control to validate -->
+    <input type="text" id="higher" name="higher" size="15">
+    <br>
+    <!-- Validators to test -->
+    <span data-validate="int" data-control="age" data-operator="greaterthan" data-comparevalue="0"
+      data-message="Your age seems to be incorrect"></sup>
+    <span data-validate="int" data-control="higher" data-operator="greaterthan" data-comparecontrol="age"
+      data-message="The number must be higher than your age"></sup>
+    <br><br>
+    <!-- Submit button -->
+    <button type="submit" onclick="return Validators.validate();">
+      Submit
+    </button>
+  </form>
+</body>
+</html>

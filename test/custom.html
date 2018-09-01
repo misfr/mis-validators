@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Custom validation test</title>
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/validators.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+  <script type="text/javascript">
+
+    var i = 0;
+
+    function myValidation(args) {
+      if(i % 2 == 0) {
+        args.isValid = false;
+        args.message = "This is a custom validation message";
+      }
+      i++;
+    }
+
+  </script>
+</head>
+<body>
+  <form method="POST">
+    <!-- Validators to test -->
+    <span data-validate="custom" data-function="myValidation"></span>
+    <br><br>
+    <!-- Submit buttons -->
+    <button type="submit" onclick="return Validators.validate();">
+      Submit
+    </button>
+  </form>
+</body>
+</html>

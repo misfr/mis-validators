@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Float number test</title>
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+  <script type="text/javascript" src="../dist/validators.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+</head>
+<body>
+  <form method="POST">
+    <label for="age">
+      Price :&nbsp;
+    </label>
+    <!-- Control to validate -->
+    <input type="text" id="price" name="price" size="15">
+    <br>
+    <label for="lower">
+        Lower price :&nbsp;
+    </label>
+    <!-- Control to validate -->
+    <input type="text" id="lower" name="lower" size="15">
+    <br>
+    <!-- Validators to test -->
+    <span data-validate="float" data-control="price" data-operator="greaterthan" data-comparevalue="0"
+      data-message="The price seems to be incorrect"></sup>
+    <span data-validate="float" data-control="lower" data-operator="lessthan" data-comparecontrol="price"
+      data-message="The number must be lower than the price"></sup>
+    <br><br>
+    <!-- Submit button -->
+    <button type="submit" onclick="return Validators.validate();">
+      Submit
+    </button>
+  </form>
+</body>
+</html>

@@ -1,0 +1,22 @@
+label {
+  display: inline-block;
+  vertical-align: middle;
+  color:#000;
+  font-weight: bold;
+}
+input, textarea, select {
+  display: inline-block;
+  vertical-align: middle;
+  border: solid 1px #999;
+  border-radius: 4px;
+  padding:3px;
+  line-height: 1.2;
+  color:#333;
+}
+.required {
+  color:#f00;
+}
+.is-invalid {
+  border: solid 1px #f00;
+  color:#900;
+}

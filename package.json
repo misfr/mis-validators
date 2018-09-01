@@ -1,0 +1,29 @@
+{
+  "name": "mis-validators",
+  "version": "1.0.0",
+  "description": "Simple javascript form validation utility",
+  "main": "dist/validators.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/misfr/validators.git"
+  },
+  "keywords": [
+    "validator",
+    "form",
+    "javascript",
+    "jquery",
+    "html"
+  ],
+  "author": "Frederic BAYLE",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/misfr/validators/issues"
+  },
+  "homepage": "https://github.com/misfr/validators#readme",
+  "dependencies": {
+    "@types/jquery": "^3.3.6"
+  }
+}
