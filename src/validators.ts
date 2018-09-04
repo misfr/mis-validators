@@ -100,6 +100,11 @@ namespace Validators {
         }
       }
 
+      // Check if validator is enabled or not
+      if($(this).data("enabled") == "false" || $(this).data("enabled") == false) {
+        validateControl = false;
+      }
+
       let ctrlValidationStatus: boolean = true;
 
       // Custom validation

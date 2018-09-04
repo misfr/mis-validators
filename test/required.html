@@ -8,6 +8,13 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
   <script type="text/javascript" src="../dist/validators.js"></script>
   <script type="text/javascript" src="main.js"></script>
+  <script type="text/javascript">
+    $(function() {
+      $("#validators_enabled").change(function() {
+        $("*[data-validate]").data("enabled", $(this).is(":checked") ? true : false);
+      });
+    });
+  </script>
 </head>
 <body>
   <form method="POST">
@@ -17,10 +24,13 @@
     <!-- Control to validate -->
     <input type="email" id="email" name="email" size="150" placeholder="Enter an email address">
     <!-- Validators to test -->
-    <span data-validate="required" data-control="email"
+    <span id="test" data-validate="required" data-control="email"
       data-message="You must enter an email address (global)"></span>
     <span data-validate="required" data-control="email" data-validationgroup="grp_test"
       data-message="You must enter an email address (group)"></span>
+    <br><br>
+    <!-- Enabled/disable  validators -->
+    <label><input type="checkbox" id="validators_enabled" value="1" checked>&nbsp;Enable validators
     <br><br>
     <!-- Submit buttons -->
     <button type="submit" onclick="return Validators.validate();">

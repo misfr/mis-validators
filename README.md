@@ -35,6 +35,10 @@ __Required attributes__ :
 * **data-control** : Input control to validate
 * **data-message** : Message to display when the input control validation fails
 
+__Optional attributes__ :
+
+* **data-enabled** : Flag that determines whether validation should check the validator or not
+
 ## Available validators
 
 ### **required** - Required field validation

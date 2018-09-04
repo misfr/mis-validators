@@ -168,6 +168,10 @@ var Validators;
                     validateControl = true;
                 }
             }
+            // Check if validator is enabled or not
+            if ($(this).data("enabled") == "false" || $(this).data("enabled") == false) {
+                validateControl = false;
+            }
             var ctrlValidationStatus = true;
             // Custom validation
             if ($(this).data("validate") === "custom" && validateControl === true) {
