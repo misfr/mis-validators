@@ -1,8 +1,9 @@
 {
   "name": "mis-validators",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Simple javascript form validation utility",
   "main": "dist/validators.js",
+  "types": "dist/validators.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
