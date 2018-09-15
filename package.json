@@ -1,11 +1,11 @@
 {
   "name": "mis-validators",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Simple javascript form validation utility",
-  "main": "dist/validators.js",
-  "types": "dist/validators.d.ts",
+  "main": "./dist/validators.js",
+  "types": "./@types/mis-validators/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc && uglifyjs -c -m -o ./dist/validators.min.js ./dist/validators.js && mv ./dist/validators.d.ts ./@types/mis-validators/index.d.ts"
   },
   "repository": {
     "type": "git",
@@ -26,5 +26,9 @@
   "homepage": "https://github.com/misfr/validators#readme",
   "dependencies": {
     "@types/jquery": "^3.3.6"
+  },
+  "devDependencies": {
+    "typescript": "^3.0.3",
+    "uglify-js": "^3.4.9"
   }
 }

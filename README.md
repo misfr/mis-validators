@@ -14,6 +14,17 @@ You can require the main validators script in your HTML pages like this :
 <script type="text/javascript" src="path_to_validators/dist/validators.js"></script>
 ```
 
+## Using Validators with Typescript
+
+If you plan to use typescript, you will need to declare the mis-validators @types directory in your tsconfig.json configuration file like this :
+
+```json
+"typeRoots": [
+  "./node_modules/@types",
+  "./node_modules/mis-validators/@types"
+]
+```
+
 ## Simple form validation example
 
 Let's see a simple example with a basic authentication form :
