@@ -1,28 +1,41 @@
-# Validators
+# mis-validators
 
 Simple javascript form validation utility
 
 ## Requirements
 
-Validators simply requires JQuery >= 1.9.1
+There's no requirement
 
 ## Installation
 
-You can require the main validators script in your HTML pages like this :
+If you plan to use mis-validators as module, simpùly type the following command in a terminal :
 
-```html
-<script type="text/javascript" src="path_to_validators/dist/validators.js"></script>
+```bash
+npm install mis-validators
 ```
 
-## Using Validators with Typescript
+Otherwise, you can include the mis-validators bundle script in your HTML pages like this :
 
-If you plan to use typescript, you will need to declare the mis-validators @types directory in your tsconfig.json configuration file like this :
+```html
+<script type="text/javascript" src="path_to_validators/mis-validators.bundle.js"></script>
+```
 
-```json
-"typeRoots": [
-  "./node_modules/@types",
-  "./node_modules/mis-validators/@types"
-]
+## Using mis-validators in a javascript module
+
+If you use mis-validators as a module, you have to require it and instanciate the main class like this :
+
+__ES5 :__
+
+```javascript
+const v = require("mis-validators");
+let validators = new v.Validators();
+```
+
+__ES6 / Typescript :__
+
+```javascript
+import { Validators } from "mis-validators";
+let validators = new Validators();
 ```
 
 ## Simple form validation example
@@ -30,7 +43,7 @@ If you plan to use typescript, you will need to declare the mis-validators @type
 Let's see a simple example with a basic authentication form :
 
 ```html
-<form id="myform" onsubmit="return Validators.validate();">
+<form id="myform" onsubmit="return validators.validate();">
   <input type="email" id="login" name="login" placeholder="Enter your email address">
   <span data-validate="required" data-control="email" data-message="You must enter your email address"></span>
   <input type="password" id="pwd" name="pwd" placeholder="Enter your password">
@@ -153,16 +166,17 @@ Dates and floating point numbers can be written in different ways depending on y
 You can define the locale to use using this method :
 
 ```javascript
-Validators.L10n.setCurrentLocale("fr");
+validators.localization.setCurrentLocale("fr");
 ```
 
 By the way, you can also extend validators with youre own localization parameters like this :
 
 ```javascript
-Validators.L10n.locales["myLocale"] = new Validators.L10n.LocalizationData("myLocale");
-Validators.L10n.locales["myLocale"].dateFormat = /^([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{4,})(\s+([0-9]{1,2}):([0-9]{1,2})(:([0-9]{1,2}))?)?/;
-Validators.L10n.locales["myLocale"].dateFormatGroups = { day: 1, month: 2, year: 3, hour: 5, minutes: 6, seconds: 8 };
-Validators.L10n.locales["myLocaler"].decimalSeparator = ",";
+validators.localization.addCustomLocale("myLocale", {
+  dateFormat: /^([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{4,})(\s+([0-9]{1,2}):([0-9]{1,2})(:([0-9]{1,2}))?)?/,
+  dateFormatGroups: { days: 1, months: 2, years: 3, hours: 5, minutes: 6, seconds: 8 },
+  decimalSeparator: ","
+})
 ```
 
 ## Handling validation events
@@ -172,13 +186,13 @@ You can customize the executed code during the validation process like this :
 
 ```javascript
 // Event triggered when the validation begins
-Validators.onValidationBegin = function () {
+validators.onValidationBegin = function () {
   // For example, you can reset the validation state of all input controls
   $(".is-invalid").removeClass("is-invalid");
 };
 
 // Event triggered when a validator is checked
-Validators.onControlValidated = function (controlToValidate, validationStatus) {
+validators.onControlValidated = function (controlToValidate, validationStatus) {
   if (!validationStatus) {
     // For example, you can add a specific css class to the input control if its validation fails
     controlToValidate.addClass("is-invalid");
@@ -186,7 +200,7 @@ Validators.onControlValidated = function (controlToValidate, validationStatus) {
 };
 
 // Event triggered when the validation ends
-Validators.onValidationEnd = function (validationStatus, validationMsgTab) {
+validators.onValidationEnd = function (validationStatus, validationMsgTab) {
   if (!validationStatus) {
     // For example, you can display an error message if the validation fails
     alert("The form contains some errors :\n - " + validationMsgTab.join("\n - "));
@@ -207,6 +221,6 @@ Example :
 ```
 
 ```javascript
-Validators.validate("user_add");  // This will only validate the required validator
-Validators.validate();  // This will validate all validators
+validators.validate("user_add");  // This will only validate the required validator
+validators.validate();  // This will validate all validators
 ```

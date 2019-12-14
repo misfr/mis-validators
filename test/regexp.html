@@ -5,12 +5,11 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Regular expression test</title>
   <link type="text/css" rel="stylesheet" href="main.css">
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
-  <script type="text/javascript" src="../dist/validators.js"></script>
+  <script type="text/javascript" src="../dist/mis-validators.bundle.js"></script>
   <script type="text/javascript" src="main.js"></script>
 </head>
 <body>
-  <form method="POST">
+  <form action="#" method="POST" onsubmit="alert('Validation OK, form submited !'); return false;">
     <label for="ref">
       Product reference (A-Z0-9) :&nbsp;
     </label>
@@ -21,7 +20,7 @@
       data-message="You must enter a valid reference"></sup>
     <br><br>
     <!-- Submit button -->
-    <button type="submit" onclick="return Validators.validate();">
+    <button type="submit" onclick="return validators.validate();">
       Submit
     </button>
   </form>

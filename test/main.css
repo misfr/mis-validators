@@ -13,9 +13,6 @@ input, textarea, select {
   line-height: 1.2;
   color:#333;
 }
-.required {
-  color:#f00;
-}
 .is-invalid {
   border: solid 1px #f00;
   color:#900;

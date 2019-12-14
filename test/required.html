@@ -5,40 +5,27 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Required field test</title>
   <link type="text/css" rel="stylesheet" href="main.css">
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
-  <script type="text/javascript" src="../dist/validators.js"></script>
+  <script type="text/javascript" src="../dist/mis-validators.bundle.js"></script>
   <script type="text/javascript" src="main.js"></script>
-  <script type="text/javascript">
-    $(function() {
-      $("#validators_enabled").change(function() {
-        $("*[data-validate]").data("enabled", $(this).is(":checked") ? true : false);
-      });
-    });
-  </script>
 </head>
 <body>
-  <form method="POST">
+  <form action="#" method="POST" onsubmit="alert('Validation OK, form submited !'); return false;">
     <label for="email">
-      Email Address :&nbsp;
+      Name :&nbsp;
     </label>
     <!-- Control to validate -->
-    <input type="email" id="email" name="email" size="150" placeholder="Enter an email address">
+    <input type="text" id="email" name="email" size="150" placeholder="Enter your name">
     <!-- Validators to test -->
-    <span id="test" data-validate="required" data-control="email"
-      data-message="You must enter an email address (global)"></span>
-    <span data-validate="required" data-control="email" data-validationgroup="grp_test"
-      data-message="You must enter an email address (group)"></span>
+    <span id="vld" data-validate="required" data-control="email" data-validationgroup="grp_test"
+      data-message="You must enter your name"></span>
     <br><br>
-    <!-- Enabled/disable  validators -->
-    <label><input type="checkbox" id="validators_enabled" value="1" checked>&nbsp;Enable validators
+    <!-- Enabled/Disable validators -->
+    <input type="checkbox" checked onchange="document.getElementById('vld').dataset.enabled = this.checked ? 'true' : 'false'">
+    &nbsp;Enable validator
     <br><br>
     <!-- Submit buttons -->
-    <button type="submit" onclick="return Validators.validate();">
-      Submit (all)
-    </button>
-    &nbsp;
-    <button type="submit" onclick="return Validators.validate('grp_test');">
-      Submit (group)
+    <button type="submit" onclick="return validators.validate('grp_test');">
+      Submit
     </button>
   </form>
 </body>
