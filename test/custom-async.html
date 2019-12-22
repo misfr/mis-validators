@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Async custom validation test</title>
+  <link type="text/css" rel="stylesheet" href="main.css">
+  <script type="text/javascript" src="../dist/mis-validators.bundle.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+  <script type="text/javascript">
+
+    var i = 0;
+    function myValidation(resolve, reject) {
+      setTimeout(function() {
+        var args = { isValid: true, message: "" };
+        if(i % 2 == 0) {
+          args.isValid = false;
+          args.message = "This is a custom validation message";
+        }
+        i++;
+        resolve(args);
+      }, 1000);
+    }
+
+    function validateForm() {
+      validators.validateAsync().then(function(result) {
+        if(result) {
+          alert('Validation OK, we can submit form now !');
+        }
+      }).catch(function(error) {
+        alert("Erreur : " + error.message);
+      });
+    }
+
+  </script>
+</head>
+<body>
+  <form id="frm" action="#" method="POST">
+    <!-- Validators to test -->
+    <span data-validate="custom" data-function="myValidation"></span>
+    <br><br>
+    <!-- Submit buttons -->
+    <button type="button" onclick="validateForm();">
+      Submit
+    </button>
+  </form>
+</body>
+</html>

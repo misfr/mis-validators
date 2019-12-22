@@ -3,9 +3,7 @@
  * @author Frederic BAYLE
  */
 
-import { Validators } from "../src";
-
-let validators = new Validators();
+import { Validators } from "./";
 
 // Export the validators instance the to window ojbect to make it accessible from navigator
-(<any>window).validators = validators;
+(<any>window).validators = new Validators();

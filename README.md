@@ -17,7 +17,7 @@ npm install mis-validators
 Otherwise, you can include the mis-validators bundle script in your HTML pages like this :
 
 ```html
-<script type="text/javascript" src="path_to_validators/mis-validators.bundle.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mis-validators@latest/mis-validators.bundle.js"></script>
 ```
 
 ## Using mis-validators in a javascript module
@@ -62,6 +62,23 @@ __Required attributes__ :
 __Optional attributes__ :
 
 * **data-enabled** : Flag that determines whether validation should check the validator or not
+
+## Asynchronous validation example
+
+mis-validators allows you to perform asynchronous validation using promises :
+
+```javascript
+validators.validateAsync().then(function(result) {
+  if(result) {
+    alert('Validation success');
+  }
+  else {
+    alert('Validation fail');
+  }
+}).catch(function(error) {
+  alert("An error occurred during validation : " + error.message);
+});
+```
 
 ## Available validators
 
@@ -153,10 +170,38 @@ Note that the data-control and data-message attributes are not required with thi
 <span data-validate="custom" data-function="myValidationFunction"></span>
 ```
 
+__Synchronous :__ (simple custom validation example)
+
 ```javascript
 function myValidationFunction(args) {
   args.isValid = false;   // This will indicate that validation failed
   args.message = "You must enter a valid address";  // You can customize the validator message like that
+}
+```
+
+__Asynchronous :__ (jquery ajax validation example)
+
+```javascript
+function myValidationFunction(resolve, reject) {
+  $.ajax({
+    url: "//my-asynchronous-page.php",
+    method: "POST",
+    data: { myData: "async validation example" },
+    dataType: "json",
+    success: (data) => {
+      // We assume that data was returned by the ajax request
+      // and contains the validation status
+      let args = { isValid: true, message: "" };
+      if(!data.validationStatus) {
+        args.isValid = false;   // This will indicate that validation failed
+        args.message = "You must enter a valid address";  // You can customize the validator message like that      
+      }
+      resolve(args);
+    },
+    error: () => {
+      reject(new Error("An error occurred !"));
+    }
+  });
 }
 ```
 

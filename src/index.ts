@@ -7,6 +7,7 @@
 import { L10n } from "./l10n";
 import { onValidationBeginType, onControlValidatedType, onValidationEndType, CustomValidatorArguments } from "./models";
 import { DateFormatGroupsType } from "./l10n/models";
+import { ValidationPromise } from "./validation-promise";
 
 /**
  * MIS validators main class
@@ -55,16 +56,63 @@ export class Validators {
   }
 
   /**
-   * Loop into the validators
+   * Get a flag that indicates wheter we should check this validator or not
+   * @param     pValidator        Validator
+   * @param     pValidationGroup  Validation group
+   * @returns                     Result : true if we must check this validator, otherwise false
    */
-  protected forEachValidator(pCallback: (pElt: HTMLElement) => void) {
-    let elementsToValidate = document.getElementsByTagName("*");
-    for(let i = 0; i < elementsToValidate.length; i++) {
-      if("validate" in (<HTMLElement>elementsToValidate[i]).dataset) {
-        // We must validate the element, execute the callback function
-        pCallback(<HTMLElement>elementsToValidate[i]);
+  protected checkValidator(pValidator: HTMLElement, pValidationGroup?: string): boolean {
+    let returnValue: boolean = false;
+
+    // Initialize validation group
+    pValidationGroup = pValidationGroup || "";
+
+    if (pValidationGroup?.trim() == "") {
+      // No validation group specified, must validate all validators
+      returnValue = true;
+    }
+    else if ("validationgroup" in pValidator.dataset) {
+      // A validation group is specified, check if this validator must be checked
+      if (("," + pValidationGroup + ",").indexOf("," + pValidator.dataset.validationgroup + ",") >= 0) {
+        // We must check this validator
+        returnValue = true;
       }
     }
+
+    // Check if validator is enabled or not
+    if(pValidator.dataset.enabled == "false") {
+      returnValue = false;
+    }
+
+    return returnValue;
+  }
+
+  /**
+   * Get the control to validate
+   * @param     pValidator  Validator
+   * @returns               Control to validate
+   */
+  protected getControlToValidate(pValidator: HTMLElement): HTMLElement|null {
+    let returnValue: HTMLElement|null = null;    
+
+    // If not a custom validator
+    if(pValidator.dataset.validate != "custom") {
+      // Ensure that we have a validation message
+      if(!("message" in pValidator.dataset)) {
+        throw new Error("You must specify the validation message using the data-message attribute");          
+      }
+
+      // Try to get the control to validate
+      if(!("control" in pValidator.dataset)) {
+        throw new Error("You must specify the control to validate using the data-control attribute");          
+      }
+      returnValue = document.getElementById(<string>pValidator.dataset.control);
+      if (!returnValue) {
+        throw new Error("Unable to find the control to validate : " + pValidator.dataset.control + ".");
+      }
+    }
+
+    return returnValue;
   }
 
   /**
@@ -108,6 +156,22 @@ export class Validators {
   };
 
   /**
+   * Get validators
+   * @returns validators
+   */
+  protected getValidators(): HTMLElement[] {
+    let elements = document.getElementsByTagName("*");
+    let returnValue: HTMLElement[] = [];
+    for(let i = 0; i < elements.length; i++) {
+      if("validate" in (<HTMLElement>elements[i]).dataset) {
+        // We must validate the element, add it to the result
+        returnValue.push(<HTMLElement>elements[i]);
+      }
+    }
+    return returnValue;
+  }
+
+  /**
    * Get localization utilities
    * @returns Localization utilities
    */
@@ -121,132 +185,161 @@ export class Validators {
    * @returns                  True on success, otherwise false
    */
   public validate(pValidationGroup?: string): boolean {
-    // Initialize validation group
-    pValidationGroup = pValidationGroup || "";
-
-    // Other initializations
+    // Initializations
     let validationMsgTab: string[] = [];
     let validationStatus: boolean = true;
+    let validators = this.getValidators();
 
     // Validation begining event
     this.onValidationBegin();
 
     // For each validator
-    this.forEachValidator((pValidatorElt: HTMLElement) => {
-      let controlToValidate: HTMLElement|null = null;
-
-      // If not a custom validator
-      if(pValidatorElt.dataset.validate != "custom") {
-        // Ensure that we have a validation message
-        if(!("message" in pValidatorElt.dataset)) {
-          throw new Error("You must specify the validation message using the data-message attribute");          
-        }
-
-        // Try to get the control to validate
-        if(!("control" in pValidatorElt.dataset)) {
-          throw new Error("You must specify the control to validate using the data-control attribute");          
-        }
-        controlToValidate = document.getElementById(<string>pValidatorElt.dataset.control);
-        if (!controlToValidate) {
-          throw new Error("Unable to find the control to validate : " + pValidatorElt.dataset.control + ".");
-        }
-      }
-
-      // Check if we must check this validator
-      var checkValidator = false;
-      if (pValidationGroup?.trim() == "") {
-        // No validation group specified, must validate all validators
-        checkValidator = true;
-      }
-      else if ("validationgroup" in pValidatorElt.dataset) {
-        // A validation group is specified, check if this validator must be checked
-        if (("," + pValidationGroup + ",").indexOf("," + pValidatorElt.dataset.validationgroup + ",") >= 0) {
-          // We must check this validator
-          checkValidator = true;
-        }
-      }
-
-      // Check if validator is enabled or not
-      if(pValidatorElt.dataset.enabled == "false") {
-        checkValidator = false;
-      }
-
+    for(let i = 0; i < validators.length; i++) {
+      let controlToValidate: HTMLElement|null = this.getControlToValidate(validators[i]);
       let validatorValidationStatus: boolean = true;
-
-      // Custom validation
-      if (pValidatorElt.dataset.validate == "custom" && checkValidator) {
-        let customArguments: CustomValidatorArguments = new CustomValidatorArguments();
-        this.validateCustom(customArguments, pValidatorElt);
-        if (!customArguments.isValid) {
-          validationStatus = false;
-          if(customArguments.message) {
-            validationMsgTab.push(customArguments.message);
+      if(this.checkValidator(validators[i], pValidationGroup)) {
+        if (validators[i].dataset.validate == "custom") {
+          // Custom validator
+          let customArguments: CustomValidatorArguments = new CustomValidatorArguments();
+          this.validateCustom(customArguments, validators[i]);
+          this.onControlValidated(<HTMLElement>controlToValidate, customArguments.isValid);
+          if (!customArguments.isValid) {
+            validationStatus = false;
+            if(customArguments.message) {
+              validationMsgTab.push(customArguments.message);
+            }
+          }
+        }
+        else {
+          // Common validators
+          validatorValidationStatus = this.validateCommon(validators[i], controlToValidate);
+          this.onControlValidated(<HTMLElement>controlToValidate, validatorValidationStatus);
+          if (!validatorValidationStatus) {
+            // Validation failed
+            validationStatus = false;
+            validationMsgTab.push(<string>validators[i].dataset.message);
           }
         }
       }
-
-      // Required field
-      if (pValidatorElt.dataset.validate == "required" && checkValidator) {
-        validatorValidationStatus = this.validateRequired(<HTMLElement>controlToValidate);
-        if (!validatorValidationStatus) {
-          validationStatus = false;
-          validationMsgTab.push(<string>pValidatorElt.dataset.message);
-        }
-      }
-
-      // Regex 
-      if (pValidatorElt.dataset.validate == "regexp" && checkValidator) {
-        validatorValidationStatus = this.validateRegexp(<HTMLElement>controlToValidate, pValidatorElt);
-        if (!validatorValidationStatus) {
-          validationStatus = false;
-          validationMsgTab.push(<string>pValidatorElt.dataset.message);
-        }
-      }
-
-      // Int number
-      if (pValidatorElt.dataset.validate == "int" && checkValidator) {
-        validatorValidationStatus = this.validateInt(<HTMLElement>controlToValidate, pValidatorElt);
-        if (!validatorValidationStatus) {
-          validationStatus = false;
-          validationMsgTab.push(<string>pValidatorElt.dataset.message);
-        }
-      }
-
-      // Float number
-      if (pValidatorElt.dataset.validate == "float" && checkValidator) {
-        validatorValidationStatus = this.validateFloat(<HTMLElement>controlToValidate, pValidatorElt);
-        if (!validatorValidationStatus) {
-          validationStatus = false;
-          validationMsgTab.push(<string>pValidatorElt.dataset.message);
-        }
-      }
-
-      // Date
-      if (pValidatorElt.dataset.validate == "date" && checkValidator) {
-        validatorValidationStatus = this.validateDate(<HTMLElement>controlToValidate, pValidatorElt);
-        if (!validatorValidationStatus) {
-          validationStatus = false;
-          validationMsgTab.push(<string>pValidatorElt.dataset.message);
-        }
-      }
-
-      // Email address
-      if (pValidatorElt.dataset.validate == "email" && checkValidator) {
-        validatorValidationStatus = this.validateEmailAddress(<HTMLElement>controlToValidate);
-        if (!validatorValidationStatus) {
-          validationStatus = false;
-          validationMsgTab.push(<string>pValidatorElt.dataset.message);
-        }
-      }
-
-      // Control validated event
-      this.onControlValidated(<HTMLElement>controlToValidate, validationStatus);
-    });
+    }
 
     // Validation ending event
     this.onValidationEnd(validationStatus, validationMsgTab);
 
     return validationStatus;
+  }
+
+  /**
+   * Validate input controls asynchronously
+   * @param   pValidationGroup Validation group, if no validation group specified, all controls will be validated
+   * @returns                  Result promise : True on success, otherwise false
+   */
+  public validateAsync(pValidationGroup?: string): ValidationPromise<boolean> {
+    return new ValidationPromise<boolean>((resolve, reject) => {
+      // Initializations
+      let validationMsgTab: string[] = [];
+      let validationStatus: boolean = true;
+      let nbValidatorsDone = 0;
+      let errorCaught = false;
+      try {
+        let validators = this.getValidators();
+
+        // Validation begining event
+        this.onValidationBegin();
+
+        // For each validator
+        for(let i = 0; i < validators.length; i++) {
+          let controlToValidate: HTMLElement|null = this.getControlToValidate(validators[i]);
+          let validatorValidationStatus: boolean = true;
+          if(this.checkValidator(validators[i], pValidationGroup)) {
+            if (validators[i].dataset.validate == "custom") {
+              // Custom validator
+              this.validateCustomAsync(validators[i]).then((customArguments) => {
+                this.onControlValidated(<HTMLElement>controlToValidate, customArguments.isValid);
+                if (!customArguments.isValid) {
+                  validationStatus = false;
+                  if(customArguments.message) {
+                    validationMsgTab.push(customArguments.message);
+                  }
+                }
+                nbValidatorsDone++;
+              }).catch((error) => {
+                // Handle errors
+                errorCaught = true;
+                reject(error);
+              });
+            }
+            else {
+              // Common validators
+              validatorValidationStatus = this.validateCommon(validators[i], controlToValidate);
+              this.onControlValidated(<HTMLElement>controlToValidate, validatorValidationStatus);
+              if (!validatorValidationStatus) {
+                // Validation failed
+                validationStatus = false;
+                validationMsgTab.push(<string>validators[i].dataset.message);
+              }
+              nbValidatorsDone++;
+            }
+          }
+          else {
+            nbValidatorsDone++;
+          }
+        }
+
+        let checkAllValidatorsDone = () => {
+          if (errorCaught) {
+            // Error caught, cancel validation
+            return;
+          }
+          else if(nbValidatorsDone < validators.length) {
+            // Validation not complete, try again later
+            setTimeout(checkAllValidatorsDone, 10);
+          }
+          else {
+            // Validation complete
+            this.onValidationEnd(validationStatus, validationMsgTab);
+            resolve(validationStatus);
+          }
+        };
+        checkAllValidatorsDone();
+      }
+      catch(error) {
+        // Handle errors
+        errorCaught= true;
+        reject(error);
+      }
+    });
+  }
+
+  /**
+   * Validate common validators
+   * @param     pValidator            Validator
+   * @param     pControlToValidate    Control to validate
+   * @returns                         Validation status (true if succes, otherwise false)
+   */
+  protected validateCommon(pValidator: HTMLElement, pControlToValidate: HTMLElement|null) {
+    let returnValue: boolean = true;
+    switch (pValidator.dataset.validate) {
+      case "required":
+        returnValue = this.validateRequired(<HTMLElement>pControlToValidate);
+        break;
+      case "regexp":
+        returnValue = this.validateRegexp(<HTMLElement>pControlToValidate, pValidator);
+        break;
+      case "int":
+        returnValue = this.validateInt(<HTMLElement>pControlToValidate, pValidator);
+        break;
+      case "float":
+        returnValue = this.validateFloat(<HTMLElement>pControlToValidate, pValidator);
+        break;
+      case "date":
+        returnValue = this.validateDate(<HTMLElement>pControlToValidate, pValidator);
+        break;
+      case "email":
+        returnValue = this.validateEmailAddress(<HTMLElement>pControlToValidate);
+        break;
+    }
+    return returnValue;
   }
 
   /**
@@ -272,6 +365,26 @@ export class Validators {
     }
     let cbFunction = new Function("pArgs", pValidatorElt.dataset.function + "(pArgs);");
     cbFunction(pArgs);
+  }
+
+  /**
+   * Custom async validation
+   * @param   pValidatorElt Element corresponding to the validator
+   * @returns               Result promise : custom validation arguments
+   */
+  protected validateCustomAsync(pValidatorElt: HTMLElement): ValidationPromise<CustomValidatorArguments> {
+    return new ValidationPromise<CustomValidatorArguments>((resolve, reject) => {
+      try {
+        if(!("function" in pValidatorElt.dataset)) {
+          throw new Error("You must define the data-function attribute in a custom validator.");
+        }
+        let cbFunction = new Function("resolve", "reject", pValidatorElt.dataset.function + "(resolve, reject);");
+        cbFunction(resolve, reject);
+      }
+      catch(error) {
+        reject(error);
+      }
+    });
   }
 
   /**
