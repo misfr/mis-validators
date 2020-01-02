@@ -195,9 +195,9 @@ export class Validators {
 
     // For each validator
     for(let i = 0; i < validators.length; i++) {
-      let controlToValidate: HTMLElement|null = this.getControlToValidate(validators[i]);
       let validatorValidationStatus: boolean = true;
       if(this.checkValidator(validators[i], pValidationGroup)) {
+        let controlToValidate: HTMLElement|null = this.getControlToValidate(validators[i]);
         if (validators[i].dataset.validate == "custom") {
           // Custom validator
           let customArguments: CustomValidatorArguments = new CustomValidatorArguments();
@@ -249,9 +249,9 @@ export class Validators {
 
         // For each validator
         for(let i = 0; i < validators.length; i++) {
-          let controlToValidate: HTMLElement|null = this.getControlToValidate(validators[i]);
           let validatorValidationStatus: boolean = true;
           if(this.checkValidator(validators[i], pValidationGroup)) {
+            let controlToValidate: HTMLElement|null = this.getControlToValidate(validators[i]);
             if (validators[i].dataset.validate == "custom") {
               // Custom validator
               this.validateCustomAsync(validators[i]).then((customArguments) => {
