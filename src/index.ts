@@ -1,23 +1,15 @@
-
 /**
  * MIS validators main module
  * @author Frederic BAYLE
  */
 
-import { L10n } from "./l10n";
+import moment from "moment";
 import { onValidationBeginType, onControlValidatedType, onValidationEndType, CustomValidatorArguments } from "./models";
-import { DateFormatGroupsType } from "./l10n/models";
-import { ValidationPromise } from "./validation-promise";
 
 /**
  * MIS validators main class
  */
 export class Validators {
-  
-  /**
-   * Localization utilities
-   */
-  protected _localization: L10n;
 
   /**
    * Validation begining event
@@ -46,12 +38,11 @@ export class Validators {
 
   /**
    * Class constructor
-   * @param pLocale Locale to use
+   * @param pLocale Locale to use (provided for convenience set the locale that moment.js will use)
    */
   constructor(pLocale?: string) {
-    this._localization = new L10n();
     if(pLocale) {
-      this._localization.setCurrentLocale(pLocale);
+      moment.locale(pLocale);
     }
   }
 
@@ -172,14 +163,6 @@ export class Validators {
   }
 
   /**
-   * Get localization utilities
-   * @returns Localization utilities
-   */
-  public get localization() {
-    return this._localization;
-  }
-
-  /**
    * Validate input controls
    * @param   pValidationGroup Validation group, if no validation group specified, all controls will be validated
    * @returns                  True on success, otherwise false
@@ -234,81 +217,46 @@ export class Validators {
    * @param   pValidationGroup Validation group, if no validation group specified, all controls will be validated
    * @returns                  Result promise : True on success, otherwise false
    */
-  public validateAsync(pValidationGroup?: string): ValidationPromise<boolean> {
-    return new ValidationPromise<boolean>((resolve, reject) => {
-      // Initializations
-      let validationMsgTab: string[] = [];
-      let validationStatus: boolean = true;
-      let nbValidatorsDone = 0;
-      let errorCaught = false;
-      try {
-        let validators = this.getValidators();
+  public async validateAsync(pValidationGroup?: string): Promise<boolean> {
+    // Initializations
+    let validationMsgTab: string[] = [];
+    let validationStatus: boolean = true;
+    let errorCaught = false;
+    let validators = this.getValidators();
 
-        // Validation begining event
-        this.onValidationBegin();
+    // Validation begining event
+    this.onValidationBegin();
 
-        // For each validator
-        for(let i = 0; i < validators.length; i++) {
-          let validatorValidationStatus: boolean = true;
-          if(this.checkValidator(validators[i], pValidationGroup)) {
-            let controlToValidate: HTMLElement|null = this.getControlToValidate(validators[i]);
-            if (validators[i].dataset.validate == "custom") {
-              // Custom validator
-              this.validateCustomAsync(validators[i]).then((customArguments) => {
-                this.onControlValidated(<HTMLElement>controlToValidate, customArguments.isValid);
-                if (!customArguments.isValid) {
-                  validationStatus = false;
-                  if(customArguments.message) {
-                    validationMsgTab.push(customArguments.message);
-                  }
-                }
-                nbValidatorsDone++;
-              }).catch((error) => {
-                // Handle errors
-                errorCaught = true;
-                reject(error);
-              });
+    // For each validator
+    for(let i = 0; i < validators.length; i++) {
+      let validatorValidationStatus: boolean = true;
+      if(this.checkValidator(validators[i], pValidationGroup)) {
+        let controlToValidate: HTMLElement|null = this.getControlToValidate(validators[i]);
+        if (validators[i].dataset.validate == "custom") {
+          // Custom validator
+          let customArguments = await this.validateCustomAsync(validators[i]);
+          this.onControlValidated(<HTMLElement>controlToValidate, customArguments.isValid);
+          if (!customArguments.isValid) {
+            validationStatus = false;
+            if(customArguments.message) {
+              validationMsgTab.push(customArguments.message);
             }
-            else {
-              // Common validators
-              validatorValidationStatus = this.validateCommon(validators[i], controlToValidate);
-              this.onControlValidated(<HTMLElement>controlToValidate, validatorValidationStatus);
-              if (!validatorValidationStatus) {
-                // Validation failed
-                validationStatus = false;
-                validationMsgTab.push(<string>validators[i].dataset.message);
-              }
-              nbValidatorsDone++;
-            }
-          }
-          else {
-            nbValidatorsDone++;
           }
         }
+        else {
+          // Common validators
+          validatorValidationStatus = this.validateCommon(validators[i], controlToValidate);
+          this.onControlValidated(<HTMLElement>controlToValidate, validatorValidationStatus);
+          if (!validatorValidationStatus) {
+            // Validation failed
+            validationStatus = false;
+            validationMsgTab.push(<string>validators[i].dataset.message);
+          }
+        }
+      }
+    }
 
-        let checkAllValidatorsDone = () => {
-          if (errorCaught) {
-            // Error caught, cancel validation
-            return;
-          }
-          else if(nbValidatorsDone < validators.length) {
-            // Validation not complete, try again later
-            setTimeout(checkAllValidatorsDone, 10);
-          }
-          else {
-            // Validation complete
-            this.onValidationEnd(validationStatus, validationMsgTab);
-            resolve(validationStatus);
-          }
-        };
-        checkAllValidatorsDone();
-      }
-      catch(error) {
-        // Handle errors
-        errorCaught= true;
-        reject(error);
-      }
-    });
+    return validationStatus;
   }
 
   /**
@@ -372,8 +320,8 @@ export class Validators {
    * @param   pValidatorElt Element corresponding to the validator
    * @returns               Result promise : custom validation arguments
    */
-  protected validateCustomAsync(pValidatorElt: HTMLElement): ValidationPromise<CustomValidatorArguments> {
-    return new ValidationPromise<CustomValidatorArguments>((resolve, reject) => {
+  protected validateCustomAsync(pValidatorElt: HTMLElement): Promise<CustomValidatorArguments> {
+    return new Promise<CustomValidatorArguments>((resolve, reject) => {
       try {
         if(!("function" in pValidatorElt.dataset)) {
           throw new Error("You must define the data-function attribute in a custom validator.");
@@ -416,7 +364,7 @@ export class Validators {
   protected validateInt(pElt: HTMLElement, pValidatorElt: HTMLElement): boolean {
     if (this.getControlValidationValue(pElt) != "") {
       let controlValue: number | undefined = undefined;
-      if (!/^-?[0-9]+$/.test(this.getControlValidationValue(pElt))) {
+      if (!(/^-?[0-9]+$/.test(this.getControlValidationValue(pElt)))) {
         return false;
       }
       controlValue = parseInt(this.getControlValidationValue(pElt), 10);
@@ -438,7 +386,7 @@ export class Validators {
         else {
           compareValue = pValidatorElt.dataset.comparevalue;
         }
-        if (!/^-?[0-9]+$/.test(<string>compareValue)) {
+        if (!(/^-?[0-9]+$/.test(<string>compareValue))) {
           return false;
         }
         compareValue = parseInt(<string>compareValue, 10);
@@ -480,7 +428,7 @@ export class Validators {
   protected validateFloat(pElt: HTMLElement, pValidatorElt: HTMLElement): boolean {
     if (this.getControlValidationValue(pElt) != "") {
       let controlValue: number | string | undefined = this.getControlValidationValue(pElt).replace(/[\.,]/g, ".");
-      if (!/^-?[0-9]+(\.[0-9]+)?$/.test(controlValue)) {
+      if (!(/^-?[0-9]+(\.[0-9]+)?$/.test(controlValue))) {
         return false;
       }
       controlValue = parseFloat(controlValue);
@@ -502,7 +450,7 @@ export class Validators {
         else {
           compareValue = pValidatorElt.dataset.comparevalue;
         }
-        if (!/^-?[0-9]+(\.[0-9]+)?$/.test(<string>compareValue)) {
+        if (!(/^-?[0-9]+(\.[0-9]+)?$/.test(<string>compareValue))) {
           return false;
         }
         compareValue = parseFloat(<string>compareValue);
@@ -608,7 +556,7 @@ export class Validators {
    */
   protected validateEmailAddress(pElt: HTMLElement): boolean {
     if (this.getControlValidationValue(pElt) != "") {
-      if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/.test(this.getControlValidationValue(pElt))) {
+      if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/.test(this.getControlValidationValue(pElt)))) {
         return false;
       }
     }
@@ -621,54 +569,26 @@ export class Validators {
    * @returns              Date object on success, otherwise undefined
    */
   public parseDate(pInputValue: string): Date | undefined {
-    // International format [yyyy-mm-dd hh:mm:ss] or ISO format [yyyy-mm-ddThh:mm:ss]
-    let rxTester = /^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})([\sT]+([0-9]{1,2}):([0-9]{1,2})(:([0-9]{1,2}))?)?/;
-    let rxGroups: DateFormatGroupsType = { days: 3, months: 2, years: 1, hours: 5, minutes: 6, seconds: 8 };
-    let nbDaysMonth: number[] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    // Try to parse the input date
+    let dateTester = moment(pInputValue, [
+      moment.ISO_8601,  // ISO Format
+      moment.HTML5_FMT.DATETIME_LOCAL_SECONDS,  //  YYYY-MM-DDTHH:mm:ss
+      moment.HTML5_FMT.DATETIME_LOCAL,          //  YYYY-MM-DDTHH:mm
+      moment.HTML5_FMT.DATE + " " + moment.HTML5_FMT.TIME_SECONDS,  // YYYY-MM-DD HH:mm:ss
+      moment.HTML5_FMT.DATE + " " + moment.HTML5_FMT.TIME,          // YYYY-MM-DD HH:mm
+      moment.HTML5_FMT.DATE,                                        // YYYY-MM-DD
+      "L LTS",    // Locale DateTime with seconds
+      "L LT",     // Locale DateTime
+      "L"         // Locale Date
+    ], true);
 
-    // First, check the international date pattern
-    if (!rxTester.test(pInputValue)) {
-      // Fail, check french format
-      rxTester = this.localization.currentLocale.dateFormat;
-      rxGroups = this.localization.currentLocale.dateFormatGroups;
-      if (!rxTester.test(pInputValue)) {
-        return undefined;
-      }
-    }
-
-    // Extract date parts
-    let rxResult: RegExpExecArray = <RegExpExecArray>rxTester.exec(pInputValue);
-    let month: number = parseInt(rxResult[rxGroups.months], 10) - 1;
-    let day: number = parseInt(rxResult[rxGroups.days], 10);
-    let year: number = parseInt(rxResult[rxGroups.years], 10);
-    let hour: number = 0;
-    let minutes: number = 0;
-    let seconds: number = 0;
-    if (rxResult[rxGroups.hours] !== undefined) {
-      // Hour specified, parse it
-      hour = parseInt(rxResult[rxGroups.hours], 10);
-      minutes = parseInt(rxResult[rxGroups.minutes], 10);
-      if (rxResult[rxGroups.seconds] !== undefined) {
-        seconds = parseInt(rxResult[rxGroups.seconds], 10);
-      }
-    }
-
-    // Adjust the number of days in February for leap years
-    if (year % 4 == 0) {
-      nbDaysMonth[1] = 29;
-    }
-
-    // Check date parts ranges
-    if (month < 0 || month > 11 || day < 1 || day > nbDaysMonth[month]) {
-      return undefined;
-    }
-    // Check hour parts ranges
-    if (hour < 0 || hour > 23 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) {
+    if(!dateTester.isValid()) {
+      // Fail, return undefined
       return undefined;
     }
 
     // Success, return a Date object
-    return new Date(year, month, day, hour, minutes, seconds);
+    return dateTester.toDate();
   }
 
 }

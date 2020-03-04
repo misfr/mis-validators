@@ -1,20 +1,20 @@
 {
   "name": "mis-validators",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Simple javascript form validation utility",
   "repository": {
     "type": "git",
     "url": "https://github.com/misfr/mis-validators.git"
   },
   "scripts": {
-    "build-dev": "rm -rf dist && mkdir dist && tsc -w",
+    "build:dev": "rm -rf dist && mkdir dist && tsc -w",
     "build": "rm -rf dist && tsc && webpack --config webpack.bundle.js --env prod && cp package.json dist/ && cp README.md dist/ && rm dist/bundle.*"
   },
   "keywords": [
     "validator",
     "form",
     "javascript",
-    "jquery",
+    "moment",
     "html"
   ],
   "author": "Frederic BAYLE",
@@ -23,7 +23,9 @@
     "url": "https://github.com/misfr/mis-validators/issues"
   },
   "homepage": "https://github.com/misfr/mis-validators#readme",
-  "dependencies": {},
+  "dependencies": {
+    "moment": "^2.24.0"
+  },
   "devDependencies": {
     "terser-webpack-plugin": "^2.3.0",
     "ts-loader": "^6.2.1",

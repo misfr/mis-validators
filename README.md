@@ -4,7 +4,14 @@ Simple javascript form validation utility
 
 ## Requirements
 
-There's no requirement
+- moment.js : Date/time manipulation utilities.
+- Promise polyfill (optional) : According to the targeted browsers, you'll need to require a Promise polyfill (you can use https://polyfill.io/ for example).
+
+you can add the folloging code if you plan to use the mis-validator bundle :
+```html
+<script type="text/javascript" src="https://polyfill.io/v3/polyfill.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
+```
 
 ## Installation
 
@@ -97,7 +104,7 @@ You can use this validator to check a pattern of an input control value.
 
 ```html
 <input type="text" id="ref" name="ref" placeholder="Enter the product reference">
-<span data-validate="required" data-control="ref" data-pattern="^[A-Z0-9]+$"
+<span data-validate="regexp" data-control="ref" data-pattern="^[A-Z0-9]+$"
   data-message="You must enter a valid reference"></span>
 ```
 
@@ -203,25 +210,6 @@ function myValidationFunction(resolve, reject) {
     }
   });
 }
-```
-
-## Localization
-
-Dates and floating point numbers can be written in different ways depending on your country. Validators comes with a full localization engine.
-You can define the locale to use using this method :
-
-```javascript
-validators.localization.setCurrentLocale("fr");
-```
-
-By the way, you can also extend validators with youre own localization parameters like this :
-
-```javascript
-validators.localization.addCustomLocale("myLocale", {
-  dateFormat: /^([0-9]{1,2})\/([0-9]{1,2})\/([0-9]{4,})(\s+([0-9]{1,2}):([0-9]{1,2})(:([0-9]{1,2}))?)?/,
-  dateFormatGroups: { days: 1, months: 2, years: 3, hours: 5, minutes: 6, seconds: 8 },
-  decimalSeparator: ","
-})
 ```
 
 ## Handling validation events

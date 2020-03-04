@@ -46,6 +46,9 @@ module.exports = (env) => {
     },
     resolve: {
       extensions: ['.js', '.ts']
+    },
+    externals: {
+      moment: "moment"
     }
   }
 };

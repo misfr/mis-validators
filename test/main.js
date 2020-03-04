@@ -3,9 +3,6 @@
  * @author Frederic BAYLE
  */
 
-// Set the current locale to French
-validators.localization.setCurrentLocale("fr");
-
 // Defining needed validation events
 validators.onValidationBegin = () => {
   let elements = document.getElementsByTagName("*");

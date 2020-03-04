@@ -5,6 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Date test</title>
   <link type="text/css" rel="stylesheet" href="main.css">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment-with-locales.min.js"></script>
   <script type="text/javascript" src="../dist/mis-validators.bundle.js"></script>
   <script type="text/javascript" src="main.js"></script>
 </head>
@@ -19,8 +20,8 @@
     <span id="vld" data-validate="date" data-control="birthday" data-operator="lessthan"
       data-message="Your birthday must be lower that the current date"></span>
     <script type="text/javascript">
-      let today = new Date();
-      document.getElementById("vld").dataset.comparevalue = (new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()))).toISOString();
+      moment.locale("fr");
+      document.getElementById("vld").dataset.comparevalue = moment().format("L");
     </script>
     <br><br>
     <!-- Submit buttons -->
