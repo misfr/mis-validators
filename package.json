@@ -1,6 +1,6 @@
 {
   "name": "mis-validators",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Simple javascript form validation utility",
   "repository": {
     "type": "git",

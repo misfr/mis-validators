@@ -556,7 +556,7 @@ export class Validators {
    */
   protected validateEmailAddress(pElt: HTMLElement): boolean {
     if (this.getControlValidationValue(pElt) != "") {
-      if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/.test(this.getControlValidationValue(pElt)))) {
+      if (!(/^\w+([\.\-_]\w+)*@\w+([\.\-_]\w+)*(\.\w{2,})+$/.test(this.getControlValidationValue(pElt)))) {
         return false;
       }
     }
